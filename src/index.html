@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2333</title>
+</head>
+<body>
+    <div class="box" id="app">
+<!--        <a href = 'UNI60C2E21://'> 打开app </a>-->
+        <wx-open-launch-app
+                id="launch-btn"
+                appid="wx85388da7b25d66f8"
+                extinfo="111"
+                @ready="labelReady"
+                @launch="labelLaunch"
+                @error="labelError"
+        >
+            <script type="text/wxtag-template">
+                <style>.btn { padding: 12px }</style>
+                <button class="btn">打开app</button>
+            </script>
+        </wx-open-launch-app>
+        <div>errerrMsg{{err.detail}}</div>
+<!--        <div>errappId{{err.detail.appId}}</div>-->
+<!--        <div>errextInfo{{err.detail.extInfo}}</div>-->
+    </div>
+
+</body>
+<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- 生产环境版本，优化了尺寸和速度 -->
+<!--<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>-->
+<script src="https://res2.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/js-sha1/0.6.0/sha1.min.js"></script>
+
+<script>
+    Vue.config.ignoredElements = ['wx-open-launch-app', 'wx-open-launch-weapp']
+    var app=new Vue({
+       el:"#app",
+       data:{
+           noncestr:'',
+           jsapi_ticket:'',
+           timestamp:'',
+           url:'https://www.sdbly.cn/gzhtoapp/',
+           sign:'',
+           err:{}
+       },
+       created(){
+           this.noncestr=Math.random().toString(36).slice(-8)
+           this.timestamp=parseInt(new Date().getTime()/1000)
+           axios({
+               method: 'get',
+               url: 'https://www.sdbly.cn/app/wechat/getJsapiticket',
+           }).then(res=>{
+               if(res.data.code===200){
+                   this.jsapi_ticket=res.data.data.ticket
+                   this.getSignature()
+                   wx.config({
+                       debug: true, // 开启调试模式,调用的所有 api 的返回值会在客户端 alert 出来，若要查看传入的参数，可以在 pc 端打开，参数信息会通过 log 打出，仅在 pc 端时才会打印
+                       appId: 'wx89fa60c5967f50cc', // 必填，公众号的唯一标识
+                       timestamp: this.timestamp, // 必填，生成签名的时间戳
+                       nonceStr: this.noncestr, // 必填，生成签名的随机串
+                       signature: this.sign,// 必填，签名
+                       jsApiList: ['wx-open-launch-app', 'wx-open-launch-weapp'], // 必填，需要使用的 JS 接口列表
+                       openTagList: ['wx-open-launch-app', 'wx-open-launch-weapp'] // 可选，需要使用的开放标签列表，例如['wx-open-launch-app']
+                   });
+                   wx.ready(()=>{
+                       console.log('wxready')
+                   })
+                   wx.error(err=>{
+                       console.log(222,err)
+                   })
+               }
+           })
+       },
+       methods:{
+            getSignature(){
+                let str=`jsapi_ticket=${this.jsapi_ticket}&noncestr=${this.noncestr}&timestamp=${this.timestamp}&url=${this.url}`
+                this.sign=sha1(str)
+            },
+           labelReady(res){
+                console.log('labelReady',res)
+           },
+           labelLaunch(res){
+               alert('labelLaunch',res)
+               console.log('labelLaunch',res)
+           },
+           labelError(err){
+                alert("labelError")
+               this.err=err
+               console.log('labelError',err)
+           }
+       },
+
+    })
+</script>
+</html>
